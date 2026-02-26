@@ -1,5 +1,4 @@
-// Cookie Consent Script - The Moorish Times
-// Simple cookie consent manager with localStorage persistence
+// The Moorish Times Cookie Consent Script
 
 (function() {
   const COOKIE_NAME = 'moorishcookie';
