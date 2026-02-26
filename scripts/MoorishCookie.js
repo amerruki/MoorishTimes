@@ -19,12 +19,12 @@
   }
 
   function showBanner() {
-    const banner = document.querySelector('[fs-cc="banner"]');
+    const banner = document.querySelector('[mtcc="banner"]');
     if (banner) banner.style.display = 'flex';
   }
 
   function hideBanner() {
-    const banner = document.querySelector('[fs-cc="banner"]');
+    const banner = document.querySelector('[mtcc="banner"]');
     if (banner) banner.style.display = 'none';
   }
 
@@ -43,8 +43,8 @@
 
     if (!consent) {
       showBanner();
-      document.querySelector('[fs-cc="allow"]')?.addEventListener('click', handleAllow);
-      document.querySelector('[fs-cc="deny"]')?.addEventListener('click', handleDeny);
+      document.querySelector('[mtcc="allow"]')?.addEventListener('click', handleAllow);
+      document.querySelector('[mtcc="deny"]')?.addEventListener('click', handleDeny);
     } else {
       hideBanner();
     }
