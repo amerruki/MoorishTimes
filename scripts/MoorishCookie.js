@@ -3,6 +3,11 @@
 (function() {
   const COOKIE_NAME = 'moorishcookie';
   const COOKIE_EXPIRY = 365; // days
+  const CONSENT_STATES = {
+    ACCEPTED: 'accepted',
+    REFUSED: 'refused',
+    PENDING: 'pending'
+  };
 
   function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -28,13 +33,33 @@
     if (banner) banner.style.display = 'none';
   }
 
+  function updateGAConsent(state) {
+    window.dataLayer = window.dataLayer || [];
+    
+    if (state === CONSENT_STATES.ACCEPTED) {
+      // Full tracking with all features
+      gtag('consent', 'update', {
+        'analytics_storage': 'granted',
+        'ad_storage': 'granted'
+      });
+    } else {
+      // Refused or Pending: anonymous visit tracking only (no personal data)
+      gtag('consent', 'update', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied'
+      });
+    }
+  }
+
   function handleAllow() {
-    setCookie(COOKIE_NAME, 'granted', COOKIE_EXPIRY);
+    setCookie(COOKIE_NAME, CONSENT_STATES.ACCEPTED, COOKIE_EXPIRY);
+    updateGAConsent(CONSENT_STATES.ACCEPTED);
     hideBanner();
   }
 
   function handleDeny() {
-    setCookie(COOKIE_NAME, 'denied', COOKIE_EXPIRY);
+    setCookie(COOKIE_NAME, CONSENT_STATES.REFUSED, COOKIE_EXPIRY);
+    updateGAConsent(CONSENT_STATES.REFUSED);
     hideBanner();
   }
 
@@ -42,11 +67,19 @@
     const consent = getCookie(COOKIE_NAME);
 
     if (!consent) {
+      // First visit: show banner and set default anonymous tracking
       showBanner();
-      document.querySelector('[mtcc="allow"]')?.addEventListener('click', handleAllow);
-      document.querySelector('[mtcc="deny"]')?.addEventListener('click', handleDeny);
+      updateGAConsent(CONSENT_STATES.PENDING);
+      
+      const allowBtn = document.querySelector('[mtcc="allow"]');
+      const denyBtn = document.querySelector('[mtcc="deny"]');
+      
+      if (allowBtn) allowBtn.addEventListener('click', handleAllow);
+      if (denyBtn) denyBtn.addEventListener('click', handleDeny);
     } else {
+      // Returning visitor: respect their choice
       hideBanner();
+      updateGAConsent(consent);
     }
   }
 
