@@ -19,4 +19,4 @@ Moroccan heritage revisited through a new lens. Custom code and integrations pow
 ---
 
 The Moorish Times explores Moroccan history, culture, and society through articles by our contributors.
-Built on Webflow. Private repository.
+Built on Webflow. Public repository.

@@ -1,0 +1,193 @@
+/* ============================================
+   MT Gallery — Transforms Webflow Sliders into
+   responsive grid galleries with lightbox
+   ============================================ */
+
+/* Hide native Webflow slider controls */
+[id^="MultiImageSlider"] .w-slider-arrow-left,
+[id^="MultiImageSlider"] .w-slider-arrow-right,
+[id^="MultiImageSlider"] .w-slider-nav,
+[id^="MultiImageSlider"] .w-icon-slider-left,
+[id^="MultiImageSlider"] .w-icon-slider-right {
+  display: none !important;
+}
+
+/* Transform slider mask into CSS grid */
+[id^="MultiImageSlider"] .w-slider-mask {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  height: auto !important;
+  overflow: visible !important;
+  transform: none !important;
+  white-space: normal !important;
+}
+
+/* Transform each slide into a grid cell */
+[id^="MultiImageSlider"] .w-slide {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  opacity: 1 !important;
+  display: block !important;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+[id^="MultiImageSlider"] .w-slide:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Hide empty slides (no image inside) */
+[id^="MultiImageSlider"] .w-slide:empty,
+[id^="MultiImageSlider"] .w-slide:not(:has(img)) {
+  display: none !important;
+}
+
+/* Make images fill their grid cells */
+[id^="MultiImageSlider"] .w-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Slider wrapper reset */
+[id^="MultiImageSlider"].w-slider {
+  height: auto !important;
+  background: transparent !important;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* Hide entire slider when it has no visible images */
+[id^="MultiImageSlider"]:has(.w-slider-mask:empty),
+[id^="MultiImageSlider"].mt-gallery-empty {
+  display: none !important;
+}
+
+/* --- Responsive breakpoints --- */
+
+/* Tablet: 2 columns */
+@media screen and (max-width: 991px) {
+  [id^="MultiImageSlider"] .w-slider-mask {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+}
+
+/* Mobile: 1 column */
+@media screen and (max-width: 479px) {
+  [id^="MultiImageSlider"] .w-slider-mask {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* --- Lightbox overlay --- */
+
+.mt-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.mt-lightbox.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mt-lightbox__img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.mt-lightbox__close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10001;
+}
+
+.mt-lightbox__close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mt-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10001;
+}
+
+.mt-lightbox__nav:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mt-lightbox__prev { left: 20px; }
+.mt-lightbox__next { right: 20px; }
+
+.mt-lightbox__counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+}
+
+/* Hide nav buttons when only 1 image */
+.mt-lightbox[data-count="1"] .mt-lightbox__prev,
+.mt-lightbox[data-count="1"] .mt-lightbox__next,
+.mt-lightbox[data-count="1"] .mt-lightbox__counter {
+  display: none;
+}
+
+/* --- Section divider auto-hide --- */
+/* Hide dividers that follow empty sliders */
+.mt-gallery-empty + .section-divider,
+.mt-gallery-empty + .divider {
+  display: none !important;
+}
