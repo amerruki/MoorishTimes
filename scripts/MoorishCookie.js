@@ -1,16 +1,25 @@
-// The Moorish Times Cookie Consent Script — v2
+// The Moorish Times Cookie Consent Script — v2.1
 // Self-contained consent banner wired to Google Consent Mode v2.
 // Markup contract: [mtcc="banner"], [mtcc="allow"], [mtcc="deny"].
 // Pairs with the inline "consent default" snippet in the site head,
 // which reads the same cookie so returning visitors get the right
-// consent state before GTM boots. This file only manages the banner
-// and consent *updates*.
+// consent state before GTM boots.
+//
+// v2.1: the script owns the banner's entrance and exit animations.
+// The legacy Webflow interaction ("Cookie Show Up") only fired on a
+// homepage scroll marker, so the banner never appeared on any other
+// landing page; its baked initial state (off-screen right, opacity 0)
+// kept the banner invisible site-wide. The entrance below reproduces
+// the designed slide-in on every page. The exit mirrors "Cookie Bye"
+// and coexists with it if the interaction is still present.
 
 (function () {
   var COOKIE_NAME = 'moorishcookie';
   var COOKIE_DAYS = 365;
   var ACCEPTED = 'accepted';
   var REFUSED = 'refused';
+  var ENTRANCE_DELAY = 800; // ms before the slide-in starts
+  var EXIT_HIDE_AFTER = 2600; // ms before display:none, lets the slide-out finish
 
   function getCookie(name) {
     var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
@@ -53,7 +62,18 @@
 
   function showBanner() {
     var el = banner();
-    if (el) el.style.display = 'flex';
+    if (!el) return;
+    // Start from the designed off-screen state. The legacy interaction
+    // bakes the same state inline, but never rely on it being there.
+    el.style.transition = 'none';
+    el.style.transform = 'translate3d(100vw, 0, 0)';
+    el.style.opacity = '0';
+    el.style.display = 'flex';
+    setTimeout(function () {
+      el.style.transition = 'transform 0.9s ease-in-out, opacity 1s ease-in-out';
+      el.style.transform = 'translate3d(-15px, 0, 0)';
+      el.style.opacity = '1';
+    }, ENTRANCE_DELAY);
   }
 
   function hideBanner() {
@@ -61,10 +81,19 @@
     if (el) el.style.display = 'none';
   }
 
+  function dismissBanner() {
+    var el = banner();
+    if (!el) return;
+    el.style.transition = 'transform 0.9s ease-in-out, opacity 0.9s ease-in-out';
+    el.style.transform = 'translate3d(100vw, 0, 0)';
+    el.style.opacity = '0';
+    setTimeout(hideBanner, EXIT_HIDE_AFTER);
+  }
+
   function choose(value, granted) {
     setCookie(COOKIE_NAME, value, COOKIE_DAYS);
     updateConsent(granted);
-    hideBanner();
+    dismissBanner();
   }
 
   function init() {
@@ -72,7 +101,6 @@
 
     if (consent === ACCEPTED || consent === REFUSED) {
       // Returning visitor: the head snippet already applied their state.
-      // Banner stays hidden (its class hides it by default).
       hideBanner();
       return;
     }
