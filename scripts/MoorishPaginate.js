@@ -14,6 +14,9 @@
  * v1.1: nav-clearance scroll offset (reads the Nav Clearance design token,
  * falls back to 104px) · pagination prefetch with a small session cache ·
  * double-click guard + busy dim on the container.
+ * v1.2: the scroll starts immediately on click, in parallel with the fetch —
+ * the swap lands mid-glide (target Y precomputed from the stable layout
+ * above the list, so the destination never shifts).
  */
 (function () {
   'use strict';
@@ -110,6 +113,7 @@
     busy = true;
     container.style.transition = 'opacity .15s';
     container.style.opacity = '0.55';          // instant feedback on cold fetches
+    scrollToList();                            // v1.2: glide starts NOW, parallel with the fetch
 
     var timedOut = new Promise(function (ignore, reject) {
       setTimeout(reject, TIMEOUT_MS, new Error('timeout'));
@@ -139,7 +143,6 @@
             window.history.pushState({ mtPaginate: true }, '', url);
           }
           if (doc.title) document.title = doc.title;
-          scrollToList();
           busy = false;
           prefetch();                          // warm the new neighbors (page 3, …)
         });
