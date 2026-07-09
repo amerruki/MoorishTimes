@@ -1,4 +1,4 @@
-// The Moorish Times Cookie Consent Script — v2.1
+// The Moorish Times Cookie Consent Script — v2.2
 // Self-contained consent banner wired to Google Consent Mode v2.
 // Markup contract: [mtcc="banner"], [mtcc="allow"], [mtcc="deny"].
 // Pairs with the inline "consent default" snippet in the site head,
@@ -12,6 +12,10 @@
 // kept the banner invisible site-wide. The entrance below reproduces
 // the designed slide-in on every page. The exit mirrors "Cookie Bye"
 // and coexists with it if the interaction is still present.
+//
+// v2.2: honors prefers-reduced-motion — the banner appears in place
+// (same 800ms delay, no slide) and dismissal hides it immediately.
+// Queried per action, so an OS-level toggle applies without a reload.
 
 (function () {
   var COOKIE_NAME = 'moorishcookie';
@@ -60,9 +64,24 @@
     return document.querySelector('[mtcc="banner"]');
   }
 
+  function reducedMotion() {
+    return window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function showBanner() {
     var el = banner();
     if (!el) return;
+    if (reducedMotion()) {
+      // Appear in place after the same delay — no slide, no fade.
+      setTimeout(function () {
+        el.style.transition = 'none';
+        el.style.transform = 'translate3d(-15px, 0, 0)';
+        el.style.opacity = '1';
+        el.style.display = 'flex';
+      }, ENTRANCE_DELAY);
+      return;
+    }
     // Start from the designed off-screen state. The legacy interaction
     // bakes the same state inline, but never rely on it being there.
     el.style.transition = 'none';
@@ -84,6 +103,7 @@
   function dismissBanner() {
     var el = banner();
     if (!el) return;
+    if (reducedMotion()) { hideBanner(); return; }
     el.style.transition = 'transform 0.9s ease-in-out, opacity 0.9s ease-in-out';
     el.style.transform = 'translate3d(100vw, 0, 0)';
     el.style.opacity = '0';
