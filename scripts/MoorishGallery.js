@@ -1,6 +1,11 @@
 /*!
- * MoorishGallery v2.0 — CMS photo galleries as grid + lightbox.
+ * MoorishGallery v2.1 — CMS photo galleries as grid + lightbox.
  * One script, replaces both the 2021 slider-init paste and mt-gallery.js.
+ *
+ * v2.1: galleries anchor on the CMS wrapper when the slider element is absent
+ * — the 7 template slider components are now deletable in the Designer (the
+ * wrappers stay: they are the data). Layout niceties live in mt-gallery.css
+ * (orphan-tile spans, editorial-gutter alignment).
  *
  * Why v2: v1 populated Webflow's slider DOM and a stylesheet dressed it as a
  * grid — but Webflow's slider engine (autoplay fade, 4s) kept writing inline
@@ -87,12 +92,15 @@
       if (!slider && !wrapper) continue;
       built.found++;
 
-      var conditionHidden = slider && slider.className.indexOf('w-condition-invisible') !== -1;
+      var conditionHidden =
+        (slider && slider.className.indexOf('w-condition-invisible') !== -1) ||
+        (!slider && wrapper && wrapper.className.indexOf('w-condition-invisible') !== -1);
       var urls = wrapper ? imageUrls(wrapper) : [];
+      var anchor = slider || wrapper;
 
-      if (slider && urls.length && !conditionHidden) {
+      if (anchor && urls.length && !conditionHidden) {
         var gallery = buildGallery(urls, n);
-        slider.parentNode.insertBefore(gallery, slider);
+        anchor.parentNode.insertBefore(gallery, anchor);
         built.push({ gallery: gallery, urls: urls });
       }
       // Either way the Webflow slider machinery leaves the page.

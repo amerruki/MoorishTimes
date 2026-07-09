@@ -10,7 +10,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin: 16px 0;
+  /* 17px mirrors .post-text side padding: gallery edges align with the text column */
+  margin: 16px 17px;
 }
 
 /* A lone image reads as a figure, not a thumbnail */
@@ -20,6 +21,29 @@
 
 .mt-gallery[data-count="1"] .mt-gallery__item {
   aspect-ratio: 16 / 9;
+}
+
+/* Pairs and quads read better as two columns (no widowed cell) —
+   above mobile only, where everything stacks to one column anyway */
+@media (min-width: 480px) {
+  .mt-gallery[data-count="2"],
+  .mt-gallery[data-count="4"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* --- Orphan handling on the 3-column grid (desktop) ---
+   A tile alone on the last row becomes a full-width figure;
+   two tiles on the last row fill it as one normal + one wide. */
+@media (min-width: 992px) {
+  .mt-gallery:not([data-count="2"]):not([data-count="4"]) .mt-gallery__item:last-child:nth-child(3n+1) {
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+  }
+  .mt-gallery:not([data-count="2"]):not([data-count="4"]) .mt-gallery__item:last-child:nth-child(3n+2) {
+    grid-column: span 2;
+    aspect-ratio: 8 / 3;
+  }
 }
 
 .mt-gallery__item {
@@ -60,10 +84,15 @@
 
 /* --- Responsive --- */
 
-@media screen and (max-width: 991px) {
+@media screen and (min-width: 480px) and (max-width: 991px) {
   .mt-gallery {
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
+  }
+  /* Odd tile left alone on the last 2-column row → full-width figure */
+  .mt-gallery:not([data-count="1"]) .mt-gallery__item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
   }
 }
 
