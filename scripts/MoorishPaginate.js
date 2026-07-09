@@ -1,5 +1,5 @@
 /*!
- * MoorishPaginate v1.1 — seamless CMS pagination for moorishtimes.com
+ * MoorishPaginate v1.3 — seamless CMS pagination for moorishtimes.com
  * Replaces jquery.pjax 2.0.1 (archived upstream). Zero dependencies.
  *
  * Behavior: intercepts Webflow pagination links (.w-pagination-wrapper a),
@@ -17,6 +17,10 @@
  * v1.2: the scroll starts immediately on click, in parallel with the fetch —
  * the swap lands mid-glide (target Y precomputed from the stable layout
  * above the list, so the destination never shifts).
+ * v1.3: honors prefers-reduced-motion — instant jump instead of the glide,
+ * plain swap instead of the View Transition crossfade. Queried per action,
+ * so an OS-level toggle applies without a reload. The opacity dim stays:
+ * fades are the reduced-motion-safe feedback.
  */
 (function () {
   'use strict';
@@ -47,6 +51,11 @@
     return isNaN(v) ? NAV_CLEARANCE_FALLBACK : v;
   }
 
+  function reducedMotion() {
+    return window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   // jQuery-free equivalent of the old $('html,body').animate(..., 1000),
   // landing the target just below the fixed nav instead of underneath it
   function scrollToList() {
@@ -54,6 +63,7 @@
     if (!t) return;
     var from = window.pageYOffset || document.documentElement.scrollTop || 0;
     var to = Math.max(0, t.getBoundingClientRect().top + from - navOffset());
+    if (reducedMotion()) { window.scrollTo(0, to); return; }
     var start;
     function step(ts) {
       if (start === undefined) start = ts;
@@ -130,7 +140,7 @@
           reinitWebflow();
         }
 
-        var transitioned = document.startViewTransition
+        var transitioned = (document.startViewTransition && !reducedMotion())
           ? document.startViewTransition(apply).finished.catch(function () {})
           : (apply(), Promise.resolve());
 
