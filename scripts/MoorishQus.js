@@ -64,10 +64,15 @@
 
   function start() {
     init();
-    // MoorishPaginate swaps #seamless-replace in place — recount after each swap.
-    var swapRoot = document.getElementById("seamless-replace");
-    if (swapRoot && window.MutationObserver) {
-      new MutationObserver(function () { init(); }).observe(swapRoot, { childList: true, subtree: true });
+    // MoorishPaginate replaces the #seamless-replace NODE itself on swap, so an
+    // observer on that node dies with it (v1 bug). Watch a stable ancestor
+    // instead; init is idempotent and cheap, debounced to coalesce the swap.
+    if (window.MutationObserver) {
+      var pending = null;
+      new MutationObserver(function () {
+        if (pending) clearTimeout(pending);
+        pending = setTimeout(init, 150);
+      }).observe(document.body, { childList: true, subtree: true });
     }
   }
 
