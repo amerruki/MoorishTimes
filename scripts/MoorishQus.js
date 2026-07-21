@@ -1,6 +1,10 @@
 /*!
- * MoorishQus v1 — Disqus comment counts for component-rendered cards on moorishtimes.com
+ * MoorishQus v1.2 — Disqus comment counts for component-rendered cards on moorishtimes.com
  * Zero dependencies. Companion to the Posts V1/V2/V3 component family.
+ *
+ * v1.2: Posts V1 cards are no longer anchors (de-anchored 2026-07-22 — the link
+ * lives on the inner .post-info-link plate). The card's URL is now derived from
+ * the first inner anchor when the root carries no href of its own.
  *
  * Why: Webflow components cannot host CMS-bound embeds (five separate platform
  * walls, proven 2026-07-18), so componentized article cards lose the per-card
@@ -25,7 +29,7 @@
   var COUNT_JS = "https://moorishtimes.disqus.com/count.js";
 
   function init() {
-    var cards = document.querySelectorAll("a.post-v1, a.post-v2, a.post-v3");
+    var cards = document.querySelectorAll(".post-v1, a.post-v2, a.post-v3");
     var added = 0;
 
     for (var i = 0; i < cards.length; i++) {
@@ -36,6 +40,11 @@
       if (!read) continue;
 
       var path = card.getAttribute("href") || "";
+      if (!path) {
+        // De-anchored V1 cards: the URL lives on the inner info-plate link.
+        var inner = card.querySelector("a[href]");
+        path = inner ? inner.getAttribute("href") || "" : "";
+      }
       if (path.indexOf("/en/") === 0) path = path.slice(3); // unify locales on the FR canonical
       if (!/^\/articles\//.test(path)) continue; // articles only — news briefs carry no counts
 
