@@ -1,5 +1,5 @@
 /* ============================================
-   MT Gallery v2.2 — grid + lightbox for CMS photo
+   MT Gallery v2.3 — grid + lightbox for CMS photo
    galleries. v2.2: lone-image galleries and the
    single-column mobile stack show images at their
    natural aspect (no cover crop); multi-column
@@ -108,18 +108,30 @@
 }
 
 @media screen and (max-width: 479px) {
+  /* v2.3: mobile keeps a gallery a GALLERY — two columns of square tiles
+     (faces survive a 1:1 crop far better than the old full-width letterbox).
+     An odd tile alone on the last row breaks out as a full-width figure at
+     its natural aspect; lone-image galleries stay natural (v2.2 rule). */
   .mt-gallery {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
   }
-  /* v2.2: single-column mobile shows every image whole — the 4:3 cover crop
-     that tidies multi-column grids crops portraits at full width. */
   .mt-gallery .mt-gallery__item {
+    aspect-ratio: 1 / 1;
+  }
+  .mt-gallery:not([data-count="1"]) .mt-gallery__item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
     aspect-ratio: auto;
   }
-  .mt-gallery .mt-gallery__zoom img {
+  .mt-gallery:not([data-count="1"]) .mt-gallery__item:last-child:nth-child(odd) img {
     height: auto;
     object-fit: unset;
+  }
+  .mt-gallery[data-count="1"] {
+    grid-template-columns: 1fr;
+  }
+  .mt-gallery[data-count="1"] .mt-gallery__item {
+    aspect-ratio: auto;
   }
 }
 
