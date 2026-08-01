@@ -1,6 +1,11 @@
 /* ============================================
-   MT Gallery v2 — grid + lightbox for CMS photo
-   galleries. Companion of MoorishGallery.js v2,
+   MT Gallery v2.2 — grid + lightbox for CMS photo
+   galleries. v2.2: lone-image galleries and the
+   single-column mobile stack show images at their
+   natural aspect (no cover crop); multi-column
+   grids keep the tidy 4:3 tiles, the lightbox
+   always shows the full image.
+   Companion of MoorishGallery.js v2,
    which builds .mt-gallery grids in place of the
    old Webflow sliders (removed from the DOM), so
    no rule here fights the Webflow slider engine.
@@ -14,13 +19,19 @@
   margin: 16px 17px;
 }
 
-/* A lone image reads as a figure, not a thumbnail */
+/* A lone image reads as a figure, not a thumbnail — and shows WHOLE (v2.2):
+   the old 16:9 frame beheaded portrait figures; a figure keeps its own aspect. */
 .mt-gallery[data-count="1"] {
   grid-template-columns: 1fr;
 }
 
 .mt-gallery[data-count="1"] .mt-gallery__item {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: auto;
+}
+
+.mt-gallery[data-count="1"] .mt-gallery__zoom img {
+  height: auto;
+  object-fit: unset;
 }
 
 /* Pairs and quads read better as two columns (no widowed cell) —
@@ -99,7 +110,16 @@
 @media screen and (max-width: 479px) {
   .mt-gallery {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 12px;
+  }
+  /* v2.2: single-column mobile shows every image whole — the 4:3 cover crop
+     that tidies multi-column grids crops portraits at full width. */
+  .mt-gallery .mt-gallery__item {
+    aspect-ratio: auto;
+  }
+  .mt-gallery .mt-gallery__zoom img {
+    height: auto;
+    object-fit: unset;
   }
 }
 
