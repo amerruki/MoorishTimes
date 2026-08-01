@@ -1,12 +1,6 @@
 /*!
- * MoorishGallery v2.2 — CMS photo galleries as grid + lightbox.
+ * MoorishGallery v2.1 — CMS photo galleries as grid + lightbox.
  * One script, replaces both the 2021 slider-init paste and mt-gallery.js.
- *
- * v2.2: a "Section Divider" placed AFTER a gallery is hidden when that gallery
- * renders nothing. The news template closes each gallery with a rule, and all but
- * one news item carries empty gallery fields — without this the rule survives its
- * gallery and floats between two paragraphs. Mirrors what hideEmptySections()
- * already did for the divider BEFORE an empty rich text.
  *
  * v2.1: galleries anchor on the CMS wrapper when the slider element is absent
  * — the 7 template slider components are now deletable in the Designer (the
@@ -103,23 +97,11 @@
         (!slider && wrapper && wrapper.className.indexOf('w-condition-invisible') !== -1);
       var urls = wrapper ? imageUrls(wrapper) : [];
       var anchor = slider || wrapper;
-      // Grab the trailing rule BEFORE the wrapper leaves the DOM: the news template
-      // closes each gallery with a "Section Divider", and on the ~30 briefs that carry
-      // no gallery images at all that rule would otherwise be left hanging in mid-air.
-      var trailingDivider = null;
-      if (anchor) {
-        var after = anchor.nextElementSibling;
-        if (after && (after.classList.contains('divider') || after.classList.contains('section-divider'))) {
-          trailingDivider = after;
-        }
-      }
 
       if (anchor && urls.length && !conditionHidden) {
         var gallery = buildGallery(urls, n);
         anchor.parentNode.insertBefore(gallery, anchor);
         built.push({ gallery: gallery, urls: urls });
-      } else if (trailingDivider) {
-        trailingDivider.style.display = 'none';   // no gallery rendered, no rule to close it
       }
       // Either way the Webflow slider machinery leaves the page.
       if (slider) slider.parentNode.removeChild(slider);
