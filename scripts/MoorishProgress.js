@@ -62,8 +62,11 @@
   function requestTick() {
     if (ticking) return;
     ticking = true;
-    if (window.requestAnimationFrame) window.requestAnimationFrame(frame);
-    else window.setTimeout(frame, 16);
+    /* rAF is suspended in hidden/background tabs; a queued-but-never-run
+       frame would latch `ticking` and swallow scroll events until the tab
+       is shown. Route through setTimeout whenever the page is hidden. */
+    if (window.requestAnimationFrame && !document.hidden) window.requestAnimationFrame(frame);
+    else window.setTimeout(frame, 33);
   }
 
   window.addEventListener('scroll', requestTick, { passive: true });
