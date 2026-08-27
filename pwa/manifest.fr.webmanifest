@@ -15,5 +15,15 @@
     { "src": "/pwa/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/pwa/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/pwa/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Actualités", "url": "/news", "icons": [{ "src": "/pwa/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Articles", "url": "/articles", "icons": [{ "src": "/pwa/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Recherche", "url": "/search", "icons": [{ "src": "/pwa/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ],
+  "screenshots": [
+    { "src": "/pwa/screenshots/fr-home-wide.jpg", "sizes": "2560x1600", "type": "image/jpeg", "form_factor": "wide", "label": "La une de The Moorish Times" },
+    { "src": "/pwa/screenshots/fr-home-narrow.jpg", "sizes": "1560x3376", "type": "image/jpeg", "form_factor": "narrow", "label": "La une sur mobile" },
+    { "src": "/pwa/screenshots/fr-news-narrow.jpg", "sizes": "1560x3376", "type": "image/jpeg", "form_factor": "narrow", "label": "Le fil d’actualité" }
   ]
 }
