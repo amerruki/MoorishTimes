@@ -13,6 +13,7 @@ Moroccan heritage revisited through a new lens. Custom code and integrations pow
 
 /scripts - JavaScript files
 /styles - CSS files
+/pwa - installable web app: manifests, service worker, icons
 /assets - Images, fonts, etc
 /integrations - API integrations
 
