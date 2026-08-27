@@ -17,7 +17,7 @@
     // Bottom-right, clear of the site's .up-button (which sits in the corner).
     offsetBottom: '88px',
     offsetRight: '16px',
-    glyph: '۞', // ۞ rub el hizb — the house mark
+    glyph: '🔔', // owner's pick 2026-08-27 (over the ۞ house-mark option)
     copy: {
       fr: { on: 'Recevoir les alertes de parution', off: 'Alertes activées — toucher pour arrêter', done: 'Alertes activées' },
       en: { on: 'Get publication alerts', off: 'Alerts on - tap to stop', done: 'Alerts on' },
@@ -110,7 +110,7 @@
     s.height = '42px';
     s.borderRadius = '50%';
     s.border = '1px solid';
-    s.font = '20px/40px sans-serif';
+    s.font = '17px/40px sans-serif'; // emoji glyph sits best a touch smaller
     s.textAlign = 'center';
     s.padding = '0';
     s.cursor = 'pointer';
