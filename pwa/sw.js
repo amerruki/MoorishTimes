@@ -1,9 +1,12 @@
-/* MoorishSW v1.0 — The Moorish Times service worker.
+/* MoorishSW v2.0 — The Moorish Times service worker.
  *
  * Deliberately boring: a pure network passthrough that holds ZERO caches,
  * so a Webflow publish can never be masked by a stale service-worker layer.
- * Its only job is the branded offline page below, shown when a navigation
- * fails because the reader has no connection.
+ * Two jobs only: the branded offline page below (when a navigation fails
+ * offline), and — since v2.0 — Web Push: show the notification composed by
+ * the backend (lib/webpush/compose.ts shape) and open the article on tap.
+ * Subscribing happens in MoorishPush.js (page-side); this file never asks
+ * for permission.
  *
  * Served same-origin at moorishtimes.com/sw.js by the `mt-pwa` Cloudflare
  * zone worker (commit-pinned jsDelivr proxy). Kill switch: repin the zone
@@ -28,6 +31,50 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).catch(() => offlineResponse(new URL(event.request.url)))
   );
+});
+
+self.addEventListener('push', (event) => {
+  // Payload: {title, body, url, tag, locale, section} — unknown fields ignored.
+  // Always show something: Safari revokes the subscription on silent pushes.
+  let n = null;
+  try {
+    n = event.data ? event.data.json() : null;
+  } catch (e) {
+    n = null;
+  }
+  const title = (n && n.title) || 'The Moorish Times';
+  const options = {
+    body: (n && n.body) || '',
+    icon: '/pwa/icons/icon-192-v2.png',
+    badge: '/pwa/icons/badge-96.png',
+    tag: (n && n.tag) || 'mt-news',
+    data: { url: (n && n.url) || '/' },
+  };
+  event.waitUntil((async () => {
+    await self.registration.showNotification(title, options);
+    if ('setAppBadge' in navigator) {
+      try { await navigator.setAppBadge(); } catch (e) { /* badge is garnish */ }
+    }
+  })());
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil((async () => {
+    if ('clearAppBadge' in navigator) {
+      try { await navigator.clearAppBadge(); } catch (e) { /* ignore */ }
+    }
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of windows) {
+      if ('focus' in client) {
+        await client.focus();
+        if ('navigate' in client) await client.navigate(url);
+        return;
+      }
+    }
+    await self.clients.openWindow(url);
+  })());
 });
 
 function offlineResponse(url) {
