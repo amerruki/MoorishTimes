@@ -1,4 +1,4 @@
-// MoorishApp v1.0 — installed-app chrome for The Moorish Times.
+// MoorishPWA v1.0 — installed-app chrome for The Moorish Times.
 // Replaces MoorishPush (v1.0.x): the bell is retired for two honest controls.
 //
 //   ⚙ bottom-LEFT  — app settings: a small panel with two tabs.

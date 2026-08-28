@@ -7,7 +7,7 @@
  * Font files also cache-first at runtime (they are immutable by URL).
  *
  * Web Push (since v2.0): show the backend's composed notification, open the
- * article on tap. Subscribing lives in MoorishApp.js — this file never asks.
+ * article on tap. Subscribing lives in MoorishPWA.js — this file never asks.
  *
  * Served same-origin at moorishtimes.com/sw.js by the `mt-pwa` Cloudflare
  * zone worker (commit-pinned jsDelivr proxy). Kill switch: repin the zone
