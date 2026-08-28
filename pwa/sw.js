@@ -1,4 +1,4 @@
-/* MoorishSW v3.0 — The Moorish Times service worker.
+/* MoorishSW v3.1 — The Moorish Times service worker.
  *
  * Doctrine: pages are NEVER cached — every navigation is network-first, so a
  * Webflow publish can never be masked. What v3.0 adds is a small versioned
@@ -50,6 +50,11 @@ self.addEventListener('activate', function (event) {
       .filter(function (k) { return k.indexOf('moorish-') === 0 && k !== SHELL_CACHE; })
       .map(function (k) { return caches.delete(k); }));
     await self.clients.claim();
+    // Hint every open window that a deployment happened. This is a nudge, not
+    // a command: pages confirm against /pwa/release.json before showing the
+    // update toast (MoorishPWA.js), and never auto-reload.
+    var windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    windows.forEach(function (c) { c.postMessage({ type: 'MT_SW_ACTIVATED' }); });
   })());
 });
 

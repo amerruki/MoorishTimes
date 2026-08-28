@@ -5,7 +5,7 @@
   "description": "Moroccan heritage revisited through a new lens - history, culture and society.",
   "lang": "en",
   "dir": "ltr",
-  "start_url": "/en/",
+  "start_url": "/en/?utm_source=pwa&utm_medium=app",
   "scope": "/",
   "display": "standalone",
   "launch_handler": {
@@ -41,7 +41,7 @@
   "shortcuts": [
     {
       "name": "News",
-      "url": "/en/news",
+      "url": "/en/news?utm_source=pwa&utm_medium=shortcut",
       "icons": [
         {
           "src": "/pwa/icons/icon-192-v2.png",
@@ -52,7 +52,7 @@
     },
     {
       "name": "Articles",
-      "url": "/en/articles",
+      "url": "/en/articles?utm_source=pwa&utm_medium=shortcut",
       "icons": [
         {
           "src": "/pwa/icons/icon-192-v2.png",
@@ -63,7 +63,7 @@
     },
     {
       "name": "Search",
-      "url": "/en/search",
+      "url": "/en/search?utm_source=pwa&utm_medium=shortcut",
       "icons": [
         {
           "src": "/pwa/icons/icon-192-v2.png",

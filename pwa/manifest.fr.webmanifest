@@ -5,7 +5,7 @@
   "description": "Le patrimoine marocain revisité — histoire, culture et société.",
   "lang": "fr",
   "dir": "ltr",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa&utm_medium=app",
   "scope": "/",
   "display": "standalone",
   "launch_handler": {
@@ -41,7 +41,7 @@
   "shortcuts": [
     {
       "name": "Actualités",
-      "url": "/news",
+      "url": "/news?utm_source=pwa&utm_medium=shortcut",
       "icons": [
         {
           "src": "/pwa/icons/icon-192-v2.png",
@@ -52,7 +52,7 @@
     },
     {
       "name": "Articles",
-      "url": "/articles",
+      "url": "/articles?utm_source=pwa&utm_medium=shortcut",
       "icons": [
         {
           "src": "/pwa/icons/icon-192-v2.png",
@@ -63,7 +63,7 @@
     },
     {
       "name": "Recherche",
-      "url": "/search",
+      "url": "/search?utm_source=pwa&utm_medium=shortcut",
       "icons": [
         {
           "src": "/pwa/icons/icon-192-v2.png",

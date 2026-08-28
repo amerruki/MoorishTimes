@@ -1,4 +1,7 @@
-// MoorishPWA v1.0 — installed-app chrome for The Moorish Times.
+// MoorishPWA v1.1 — installed-app chrome for The Moorish Times.
+// v1.1: update toast (own-pin vs /pwa/release.json beacon, checked on
+// foreground/bfcache/hourly + SW-activation hint), utm launch-param tidy +
+// pwa_context analytics, SW updateViaCache:'none' + visible-hour update polls.
 // Replaces MoorishPush (v1.0.x): the bell is retired for two honest controls.
 //
 //   ⚙ bottom-LEFT  — app settings: a small panel with two tabs.
@@ -91,7 +94,15 @@
     '.mt-saved-item a{color:#fff;text-decoration:none;font-size:13.5px;line-height:1.45;flex:1}' +
     '.mt-saved-item a:hover{color:#4FA3D9}' +
     '.mt-saved-item button{background:none;border:0;color:#777;cursor:pointer;font-size:14px;padding:0 2px}' +
-    '.mt-saved-item button:hover{color:#F24137}';
+    '.mt-saved-item button:hover{color:#F24137}' +
+    '#mt-update-toast{position:fixed;z-index:1001;left:50%;transform:translateX(-50%);bottom:74px;' +
+    ' display:flex;align-items:center;gap:14px;background:#151515;color:#fff;border:1px solid rgba(255,255,255,.22);' +
+    ' border-radius:3px;box-shadow:0 8px 32px rgba(0,0,0,.5);padding:12px 14px 12px 18px;font-size:14px;' +
+    ' font-family:\'Open Sans\',-apple-system,\'Segoe UI\',sans-serif;max-width:calc(100vw - 32px)}' +
+    '#mt-update-toast .mt-up{background:#1D7BBC;color:#fff;border:0;border-radius:3px;cursor:pointer;' +
+    ' padding:9px 20px;font:600 13px/1 inherit;letter-spacing:.04em}' +
+    '#mt-update-toast .mt-up:hover{background:#125A8C}' +
+    '#mt-update-toast .mt-x{background:none;border:0;color:#777;cursor:pointer;font-size:15px;padding:0 2px}';
   var styleEl = document.createElement('style');
   styleEl.textContent = css;
   document.head.appendChild(styleEl);
@@ -356,6 +367,107 @@
     });
   }
 
+  // ---- update toast (« Nous avons fait une mise à jour ») -----------------
+  // Staleness in this MPA is THIS pinned script inside a long-lived standalone
+  // window. The mt-pwa worker announces the current pin at /pwa/release.json;
+  // we read our own <script src> pin and compare. Never auto-reload.
+  var UP_T = EN
+    ? { msg: "We've made an update", btn: 'Refresh' }
+    : { msg: 'Nous avons fait une mise à jour', btn: 'Actualiser' };
+  var CHECK_MIN_GAP = 5 * 60 * 1000;
+  var lastCheck = 0;
+  var toastEl = null;
+
+  function ownPin() {
+    var scripts = document.querySelectorAll('script[src*="/scripts/MoorishPWA.js"]');
+    for (var i = 0; i < scripts.length; i++) {
+      var m = scripts[i].src.match(/MoorishTimes@([0-9a-f]{7,40})\//);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function showUpdateToast(newPin) {
+    if (toastEl) return;
+    try { if (sessionStorage.getItem('mt-update-dismissed') === newPin) return; } catch (e) {}
+    toastEl = el('div');
+    toastEl.id = 'mt-update-toast';
+    toastEl.appendChild(el('span', null, UP_T.msg));
+    var go = el('button', 'mt-up', UP_T.btn);
+    go.type = 'button';
+    go.onclick = function () { location.reload(); };
+    var x = el('button', 'mt-x', '✕');
+    x.type = 'button';
+    x.setAttribute('aria-label', 'OK');
+    x.onclick = function () {
+      try { sessionStorage.setItem('mt-update-dismissed', newPin); } catch (e) {}
+      toastEl.remove();
+      toastEl = null;
+    };
+    toastEl.appendChild(go);
+    toastEl.appendChild(x);
+    document.body.appendChild(toastEl);
+  }
+
+  function checkRelease(force) {
+    var now = Date.now();
+    if (!force && now - lastCheck < CHECK_MIN_GAP) return;
+    if (document.visibilityState !== 'visible') return;
+    lastCheck = now;
+    var mine = ownPin();
+    if (!mine) return;
+    fetch('/pwa/release.json', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.app && j.app.indexOf(mine) !== 0 && mine.indexOf(j.app) !== 0) {
+          showUpdateToast(j.app);
+        }
+      })
+      .catch(function () { /* next trigger retries */ });
+  }
+
+  function wireUpdateChecks() {
+    setTimeout(function () { checkRelease(true); }, 5000);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') { checkRelease(); swUpdate(); }
+    });
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) checkRelease(); // bfcache restore: no SW/network involved
+    });
+    setInterval(function () { checkRelease(); swUpdate(); }, 60 * 60 * 1000);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'MT_SW_ACTIVATED') checkRelease(true);
+      });
+    }
+  }
+
+  // Long-lived windows never navigate, so they stop checking /sw.js on their
+  // own — nudge the browser's byte-diff check while visible.
+  function swUpdate() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      if (reg) reg.update().catch(function () {});
+    });
+  }
+
+  // ---- launch analytics ---------------------------------------------------
+  // GA4 reads utm_source=pwa from the landing URL on its own; we add the
+  // display-mode dimension, then tidy the address bar for readers.
+  function launchAnalytics() {
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'pwa_context', { pwa_display_mode: 'standalone' });
+      }
+      var url = new URL(location.href);
+      if (url.searchParams.get('utm_source') === 'pwa') {
+        url.searchParams.delete('utm_source');
+        url.searchParams.delete('utm_medium');
+        history.replaceState(history.state, '', url.pathname + (url.search || '') + url.hash);
+      }
+    } catch (e) { /* analytics is garnish */ }
+  }
+
   // ---- boot ---------------------------------------------------------------
   window.addEventListener('load', function () {
     var cog = el('button', 'mt-app-fab', '⚙');
@@ -367,6 +479,14 @@
     document.body.appendChild(cog);
 
     if (ARTICLE_RE.test(location.pathname)) makeMark();
+
+    launchAnalytics();
+    wireUpdateChecks();
+    // Re-assert the registration with updateViaCache:'none' so the SW's own
+    // update checks always hit the network (the head block registers plain).
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
+    }
 
     // Weekly re-sync keeps the registry's updated_at fresh.
     if (canPush) {
