@@ -1,7 +1,10 @@
-// MoorishPWA v1.1 — installed-app chrome for The Moorish Times.
-// v1.1: update toast (own-pin vs /pwa/release.json beacon, checked on
-// foreground/bfcache/hourly + SW-activation hint), utm launch-param tidy +
-// pwa_context analytics, SW updateViaCache:'none' + visible-hour update polls.
+// MoorishPWA v1.2 — installed-app chrome for The Moorish Times.
+// v1.2: cog + bookmark redrawn as inline stroke SVGs (site style, sized to the
+// circle); FR copy « publications » per owner; served same-origin at
+// /pwa/app.js by the mt-pwa worker, which injects var MT_APP_PIN — the update
+// toast compares that against /pwa/release.json (script-src pin as fallback).
+// v1.1: update toast, utm launch-param tidy + pwa_context analytics,
+// SW updateViaCache:'none' + visible-hour update polls.
 // Replaces MoorishPush (v1.0.x): the bell is retired for two honest controls.
 //
 //   ⚙ bottom-LEFT  — app settings: a small panel with two tabs.
@@ -56,7 +59,7 @@
       }
     : {
         settings: 'Réglages', alerts: 'Alertes', saved: 'Sauvegardés',
-        all: 'Toutes les parutions', articles: 'Articles', news: 'Actualités',
+        all: 'Toutes les publications', articles: 'Articles', news: 'Actualités',
         sections: { hist: 'Histoire', cult: 'Culture', pol: 'Politique', eco: 'Économie', sport: 'Sport', actu: 'Actualité' },
         noPush: 'Les alertes ne sont pas prises en charge par ce navigateur.',
         denied: 'Les notifications sont bloquées dans les réglages du navigateur.',
@@ -71,8 +74,10 @@
   // ---- styles -------------------------------------------------------------
   var css = '' +
     '.mt-app-fab{position:fixed;z-index:999;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.28);' +
-    ' background:#151515;color:#F8DB5A;font:17px/40px sans-serif;text-align:center;padding:0;cursor:pointer;' +
+    ' background:#151515;color:#F8DB5A;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;' +
     ' box-shadow:0 2px 10px rgba(0,0,0,.35);transition:transform .15s ease,background .2s ease}' +
+    '.mt-app-fab svg{width:21px;height:21px;display:block}' +
+    '#mt-app-mark.mt-on svg .mt-fillable{fill:currentColor}' +
     '.mt-app-fab:hover{transform:scale(1.08)}' +
     '#mt-app-cog{bottom:16px;left:16px}' +
     '#mt-app-mark{bottom:88px;right:16px}' +
@@ -113,6 +118,38 @@
     if (className) n.className = className;
     if (text) n.textContent = text;
     return n;
+  }
+
+  // Inline stroke icons in the site's line style (currentColor, round caps).
+  function svgIcon(paths) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('aria-hidden', 'true');
+    paths.forEach(function (d) {
+      var p = document.createElementNS(NS, d[0]);
+      Object.keys(d[1]).forEach(function (k) { p.setAttribute(k, d[1][k]); });
+      p.setAttribute('stroke', 'currentColor');
+      p.setAttribute('stroke-width', '1.8');
+      p.setAttribute('stroke-linecap', 'round');
+      p.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(p);
+    });
+    return svg;
+  }
+  function settingsIcon() { // two sliders — the house-minimal « réglages » mark
+    return svgIcon([
+      ['line', { x1: 4, y1: 8, x2: 20, y2: 8 }],
+      ['circle', { cx: 14.6, cy: 8, r: 2.6, fill: '#151515' }],
+      ['line', { x1: 4, y1: 16, x2: 20, y2: 16 }],
+      ['circle', { cx: 9.4, cy: 16, r: 2.6, fill: '#151515' }],
+    ]);
+  }
+  function bookmarkIcon() {
+    return svgIcon([
+      ['path', { d: 'M7 4.5h10a1 1 0 0 1 1 1V20l-6-4.4L6 20V5.5a1 1 0 0 1 1-1z', 'class': 'mt-fillable' }],
+    ]);
   }
 
   // ---- IndexedDB bookmarks ------------------------------------------------
@@ -349,9 +386,10 @@
   }
 
   function makeMark() {
-    markBtn = el('button', 'mt-app-fab', '🔖');
+    markBtn = el('button', 'mt-app-fab');
     markBtn.id = 'mt-app-mark';
     markBtn.type = 'button';
+    markBtn.appendChild(bookmarkIcon());
     document.body.appendChild(markBtn);
     getBookmark(location.pathname).then(function (b) { setMark(!!b); });
     markBtn.addEventListener('click', function () {
@@ -379,6 +417,7 @@
   var toastEl = null;
 
   function ownPin() {
+    if (typeof MT_APP_PIN === 'string' && MT_APP_PIN) return MT_APP_PIN;
     var scripts = document.querySelectorAll('script[src*="/scripts/MoorishPWA.js"]');
     for (var i = 0; i < scripts.length; i++) {
       var m = scripts[i].src.match(/MoorishTimes@([0-9a-f]{7,40})\//);
@@ -470,9 +509,10 @@
 
   // ---- boot ---------------------------------------------------------------
   window.addEventListener('load', function () {
-    var cog = el('button', 'mt-app-fab', '⚙');
+    var cog = el('button', 'mt-app-fab');
     cog.id = 'mt-app-cog';
     cog.type = 'button';
+    cog.appendChild(settingsIcon());
     cog.title = T.settings;
     cog.setAttribute('aria-label', T.settings);
     cog.addEventListener('click', openPanel);
